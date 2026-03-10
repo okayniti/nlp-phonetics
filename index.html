@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speech Sounds & Phonetics in NLP</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Fraunces:wght@300;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --panel: #111118;
+    --border: #1e1e2e;
+    --accent: #7cf0c8;
+    --accent2: #ff6b6b;
+    --accent3: #ffd166;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --highlight: #1a1a2e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(124,240,200,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,240,200,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 60px;
+    animation: fadeDown 0.8s ease forwards;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 12px;
+    margin-bottom: 20px;
+    opacity: 0.8;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--text) 0%, var(--accent) 60%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  /* Nav tabs */
+  .nav {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 40px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 6px;
+    border-radius: 4px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+
+  .nav-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .nav-btn:hover { color: var(--text); background: var(--highlight); }
+  .nav-btn.active {
+    background: var(--accent);
+    color: #000;
+    font-weight: 700;
+  }
+
+  /* Sections */
+  .section { display: none; animation: fadeUp 0.4s ease forwards; }
+  .section.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .card.red::before { background: linear-gradient(90deg, var(--accent2), transparent); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--accent3), transparent); }
+
+  .card-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 14px;
+    color: var(--accent);
+  }
+
+  .card.red .card-title { color: var(--accent2); }
+  .card.yellow .card-title { color: var(--accent3); }
+
+  p { 
+    color: #c0c0d0; 
+    line-height: 1.8; 
+    font-size: 13px; 
+    margin-bottom: 14px; 
+  }
+  p:last-child { margin-bottom: 0; }
+
+  /* Phoneme grid */
+  .phoneme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 8px;
+    margin: 20px 0;
+  }
+
+  .phoneme-chip {
+    background: var(--highlight);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .phoneme-chip:hover {
+    border-color: var(--accent);
+    background: rgba(124,240,200,0.08);
+    transform: translateY(-2px);
+  }
+
+  .phoneme-chip .ipa {
+    font-size: 1.3rem;
+    display: block;
+    color: var(--accent);
+  }
+
+  .phoneme-chip .word {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* IPA tooltip */
+  #ipa-info {
+    background: rgba(124,240,200,0.08);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin: 10px 0;
+    font-size: 12px;
+    color: var(--accent);
+    min-height: 48px;
+    transition: all 0.3s;
+  }
+
+  /* Code block */
+  .code-block {
+    background: #0d0d15;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    margin: 16px 0;
+    overflow-x: auto;
+    line-height: 1.8;
+    position: relative;
+  }
+
+  .code-block .comment { color: var(--muted); }
+  .code-block .keyword { color: var(--accent3); }
+  .code-block .string { color: var(--accent2); }
+
+  /* Rule cards */
+  .rule-card {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 16px;
+    align-items: center;
+    background: var(--highlight);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    margin: 12px 0;
+    transition: border-color 0.2s;
+  }
+
+  .rule-card:hover { border-color: var(--accent); }
+
+  .rule-num {
+    font-family: 'Fraunces', serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--accent);
+    opacity: 0.4;
+    text-align: center;
+  }
+
+  .rule-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .rule-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Arrow notation */
+  .arrow-rule {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    background: var(--highlight);
+    border-left: 3px solid var(--accent3);
+    padding: 12px 16px;
+    margin: 10px 0;
+    color: var(--accent3);
+  }
+
+  .arrow-rule span { color: var(--muted); font-size: 11px; }
+
+  /* Quiz */
+  .quiz-q {
+    font-family: 'Fraunces', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+
+  .quiz-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .opt-btn {
+    background: var(--highlight);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    text-align: left;
+    transition: all 0.2s;
+  }
+
+  .opt-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .opt-btn.correct { border-color: var(--accent); background: rgba(124,240,200,0.1); color: var(--accent); }
+  .opt-btn.wrong { border-color: var(--accent2); background: rgba(255,107,107,0.1); color: var(--accent2); }
+
+  #quiz-feedback {
+    font-size: 12px;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin-top: 8px;
+    display: none;
+  }
+
+  #quiz-feedback.show { display: block; }
+  #quiz-feedback.correct { background: rgba(124,240,200,0.1); color: var(--accent); border: 1px solid var(--accent); }
+  #quiz-feedback.wrong { background: rgba(255,107,107,0.1); color: var(--accent2); border: 1px solid var(--accent2); }
+
+  .next-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 2px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  .next-btn.show { display: inline-block; }
+
+  /* Progress dots */
+  .quiz-progress {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .dot.done { background: var(--accent); }
+  .dot.current { background: var(--accent3); }
+
+  /* NLP section */
+  .nlp-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(124,240,200,0.08);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+    border-radius: 2px;
+    margin: 4px 4px 4px 0;
+  }
+
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin: 20px 0;
+  }
+
+  .flow-box {
+    background: var(--highlight);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 11px;
+    text-align: center;
+    min-width: 100px;
+    transition: border-color 0.2s;
+  }
+
+  .flow-box:hover { border-color: var(--accent); }
+  .flow-box .label { color: var(--muted); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; }
+  .flow-box .val { color: var(--accent); font-size: 14px; margin-top: 4px; }
+
+  .flow-arrow {
+    color: var(--muted);
+    font-size: 18px;
+    padding: 0 8px;
+  }
+
+  /* Allophone visual */
+  .allophone-container {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    background: var(--highlight);
+    margin: 16px 0;
+    text-align: center;
+  }
+
+  .phoneme-big {
+    font-size: 3rem;
+    color: var(--accent);
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+  }
+
+  .allophone-row {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .allophone-item {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .allophone-item .sym { font-size: 1.4rem; color: var(--accent3); }
+  .allophone-item .ctx { color: var(--muted); font-size: 10px; margin-top: 4px; }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Summary table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 16px 0;
+  }
+
+  th {
+    background: var(--highlight);
+    color: var(--accent);
+    padding: 10px 14px;
+    text-align: left;
+    letter-spacing: 1px;
+    font-size: 10px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: #b0b0c8;
+    vertical-align: top;
+  }
+
+  tr:hover td { background: var(--highlight); }
+
+  .highlight-text { color: var(--accent); font-weight: 700; }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="tag">NLP · Linguistics</div>
+    <h1>Speech Sounds<br>& Phonetics</h1>
+    <div class="subtitle">Phonemes · IPA · Phonological Rules · NLP Applications</div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="show('s1', this)">Speech Sounds</button>
+    <button class="nav-btn" onclick="show('s2', this)">Phoneme & IPA</button>
+    <button class="nav-btn" onclick="show('s3', this)">Phonological Rules</button>
+    <button class="nav-btn" onclick="show('s4', this)">NLP Applications</button>
+    <button class="nav-btn" onclick="show('s5', this)">Quiz</button>
+  </nav>
+
+  <!-- SECTION 1: Speech Sounds -->
+  <div class="section active" id="s1">
+
+    <div class="card">
+      <div class="card-title">What is a Speech Sound?</div>
+      <p>In linguistics and NLP, <span class="highlight-text">speech sounds</span> are the smallest units of spoken language. Every word you say is made up of a sequence of these sounds. The study of speech sounds is called <span class="highlight-text">phonetics</span>.</p>
+      <p>There are three branches of phonetics that NLP draws from:</p>
+      <div class="flow-diagram" style="flex-direction:column; gap: 10px; align-items: flex-start;">
+        <div style="display:flex; gap: 10px; align-items:center;">
+          <div class="flow-box"><div class="label">Articulatory</div><div class="val">How?</div></div>
+          <div class="flow-arrow">→</div>
+          <span style="font-size:12px; color:var(--muted)">How the mouth, tongue & lips produce sounds (TTS synthesis uses this)</span>
+        </div>
+        <div style="display:flex; gap: 10px; align-items:center;">
+          <div class="flow-box"><div class="label">Acoustic</div><div class="val">Signal</div></div>
+          <div class="flow-arrow">→</div>
+          <span style="font-size:12px; color:var(--muted)">The physical sound wave — frequency, amplitude (ASR processes this)</span>
+        </div>
+        <div style="display:flex; gap: 10px; align-items:center;">
+          <div class="flow-box"><div class="label">Auditory</div><div class="val">Perception</div></div>
+          <div class="flow-arrow">→</div>
+          <span style="font-size:12px; color:var(--muted)">How humans perceive and categorize sounds</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card yellow">
+      <div class="card-title">Consonants vs Vowels</div>
+      <p>Every sound is classified along two axes:</p>
+      <table>
+        <tr>
+          <th>Type</th>
+          <th>Definition</th>
+          <th>Example Words</th>
+        </tr>
+        <tr>
+          <td><span class="highlight-text">Vowels</span></td>
+          <td>Air flows freely through the vocal tract; no obstruction</td>
+          <td>a, e, i, o, u</td>
+        </tr>
+        <tr>
+          <td><span class="highlight-text">Consonants</span></td>
+          <td>Airflow is partially or fully obstructed</td>
+          <td>b, p, t, d, s, z …</td>
+        </tr>
+      </table>
+      <p>Consonants are further classified by <span class="highlight-text">place of articulation</span> (where the blockage occurs), <span class="highlight-text">manner</span> (how it's blocked), and <span class="highlight-text">voicing</span> (vocal cords vibrate or not).</p>
+    </div>
+
+    <div class="card red">
+      <div class="card-title">Voiced vs Voiceless — Minimal Pairs</div>
+      <p>A <span class="highlight-text">minimal pair</span> is two words differing in exactly ONE sound. This is key to identifying phonemes.</p>
+      <table>
+        <tr><th>Voiced</th><th>Voiceless</th><th>Difference</th></tr>
+        <tr><td>/b/ — <em>bat</em></td><td>/p/ — <em>pat</em></td><td>Voicing of bilabial stop</td></tr>
+        <tr><td>/d/ — <em>den</em></td><td>/t/ — <em>ten</em></td><td>Voicing of alveolar stop</td></tr>
+        <tr><td>/z/ — <em>zip</em></td><td>/s/ — <em>sip</em></td><td>Voicing of fricative</td></tr>
+        <tr><td>/v/ — <em>van</em></td><td>/f/ — <em>fan</em></td><td>Voicing of labiodental</td></tr>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- SECTION 2: Phoneme & IPA -->
+  <div class="section" id="s2">
+
+    <div class="card">
+      <div class="card-title">The Phoneme</div>
+      <p>A <span class="highlight-text">phoneme</span> is the smallest unit of sound that can <em>change meaning</em> in a language. It's an abstract, mental category — not a physical sound.</p>
+      <p>Example: In English, /p/ is a phoneme. "pat" ≠ "bat" because /p/ ≠ /b/. Changing the phoneme changes the meaning.</p>
+      <p>English has approximately <span class="highlight-text">44 phonemes</span> but only 26 letters — hence we need IPA!</p>
+    </div>
+
+    <div class="card yellow">
+      <div class="card-title">Phoneme vs Allophone</div>
+      <p>A phoneme can be realized in different ways depending on context — these variants are called <span class="highlight-text">allophones</span>. They don't change meaning; they're just different pronunciations of the same phoneme.</p>
+
+      <div class="allophone-container">
+        <div style="font-size:13px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;">Phoneme</div>
+        <div class="phoneme-big">/p/</div>
+        <div style="font-size:12px; color:var(--muted); margin: 8px 0 4px;">has two allophones in English:</div>
+        <div class="allophone-row">
+          <div class="allophone-item">
+            <div class="sym">[pʰ]</div>
+            <div class="ctx">Aspirated<br><em>"pin"</em><br>(breath of air)</div>
+          </div>
+          <div class="allophone-item">
+            <div class="sym">[p]</div>
+            <div class="ctx">Unaspirated<br><em>"spin"</em><br>(no puff)</div>
+          </div>
+        </div>
+        <div style="font-size:11px; color:var(--muted); margin-top:14px;">Both are heard as /p/ by English speakers — but in other languages (e.g., Hindi), these ARE different phonemes!</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Interactive IPA Chart — Click to Explore</div>
+      <p>The <span class="highlight-text">International Phonetic Alphabet (IPA)</span> gives every sound a unique symbol. Click a symbol to learn its context:</p>
+
+      <div id="ipa-info">👆 Click a phoneme below to see where it appears in words.</div>
+
+      <div style="margin-top:14px; font-size:10px; color: var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;">Consonants</div>
+      <div class="phoneme-grid" id="consonant-grid"></div>
+
+      <div style="margin-top:14px; font-size:10px; color: var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;">Vowels</div>
+      <div class="phoneme-grid" id="vowel-grid"></div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 3: Phonological Rules -->
+  <div class="section" id="s3">
+
+    <div class="card">
+      <div class="card-title">What are Phonological Rules?</div>
+      <p>Phonological rules describe <span class="highlight-text">how phonemes change in certain environments</span>. They explain why we don't pronounce words in isolation the same way we do in natural speech.</p>
+      <p>Rules are written in the form:</p>
+      <div class="arrow-rule">A → B / C __ D<br><span>sound A becomes B when it occurs after C and before D</span></div>
+      <p>These rules are critical for NLP systems like TTS (text-to-speech), ASR (speech recognition), and G2P (grapheme-to-phoneme) converters.</p>
+    </div>
+
+    <div class="card yellow">
+      <div class="card-title">Key Phonological Rules</div>
+
+      <div class="rule-card">
+        <div class="rule-num">01</div>
+        <div>
+          <div class="rule-title">Assimilation</div>
+          <div class="rule-desc">A sound becomes similar to an adjacent sound. E.g., "in" + "possible" → "impossible" (/n/ → /m/ before bilabial /p/)</div>
+        </div>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-num">02</div>
+        <div>
+          <div class="rule-title">Deletion (Elision)</div>
+          <div class="rule-desc">A sound is dropped in certain contexts. E.g., "every" → "ev'ry" in fast speech. The /ə/ is deleted between consonants.</div>
+        </div>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-num">03</div>
+        <div>
+          <div class="rule-title">Insertion (Epenthesis)</div>
+          <div class="rule-desc">A sound is added. E.g., "athlete" → "ath-uh-lete" in some dialects. Helps with difficult consonant clusters.</div>
+        </div>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-num">04</div>
+        <div>
+          <div class="rule-title">Flapping (American English)</div>
+          <div class="rule-desc">/t/ or /d/ → [ɾ] (flap) between a stressed and unstressed vowel. "butter", "water", "ladder" all have the same middle sound!</div>
+        </div>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-num">05</div>
+        <div>
+          <div class="rule-title">Vowel Reduction</div>
+          <div class="rule-desc">Unstressed vowels are reduced to schwa [ə]. E.g., "banana" → /bəˈnænə/. Very common in English; critical for TTS models.</div>
+        </div>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-num">06</div>
+        <div>
+          <div class="rule-title">Final Devoicing</div>
+          <div class="rule-desc">Voiced consonants become voiceless at the end of a word. Common in German/Russian. E.g., German "Rad" (wheel) is pronounced like "rat".</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card red">
+      <div class="card-title">Formal Rule Notation</div>
+      <p>In computational phonology, rules use feature bundles and context markers. Here are examples:</p>
+
+      <div class="arrow-rule">
+        /t, d/ → [ɾ] / V<sub>stressed</sub> __ V<sub>unstressed</sub><br>
+        <span>Flapping: t/d becomes a flap between stressed and unstressed vowels</span>
+      </div>
+
+      <div class="arrow-rule">
+        /n/ → [m] / __ [+bilabial]<br>
+        <span>Assimilation: n becomes m before bilabial consonants</span>
+      </div>
+
+      <div class="arrow-rule">
+        V → [ə] / __ (in unstressed syllable)<br>
+        <span>Vowel reduction: any vowel reduces to schwa when unstressed</span>
+      </div>
+
+      <div class="code-block">
+<span class="comment"># Simple Python G2P rule application</span>
+<span class="keyword">import</span> re
+
+<span class="keyword">def</span> apply_flapping(phonemes):
+    <span class="comment"># t/d → flap between vowels (simplified)</span>
+    pattern = <span class="string">r'([AEIOU])([td])([aeiou])'</span>
+    result = re.sub(pattern, <span class="string">r'\1ɾ\3'</span>, phonemes)
+    <span class="keyword">return</span> result
+
+<span class="comment"># "butter" → /bʌtər/ → /bʌɾər/</span>
+print(apply_flapping(<span class="string">"bʌtər"</span>))
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 4: NLP Applications -->
+  <div class="section" id="s4">
+
+    <div class="card">
+      <div class="card-title">Why Phonetics Matters in NLP</div>
+      <p>Every major speech NLP system relies on phonetic knowledge. Here's where each concept shows up:</p>
+
+      <table>
+        <tr>
+          <th>NLP Task</th>
+          <th>Phonetic Concept Used</th>
+        </tr>
+        <tr>
+          <td>Speech Recognition (ASR)</td>
+          <td>Phoneme models (HMMs, CTC), acoustic features (MFCCs)</td>
+        </tr>
+        <tr>
+          <td>Text-to-Speech (TTS)</td>
+          <td>G2P conversion, phonological rules, prosody</td>
+        </tr>
+        <tr>
+          <td>Spell Checking</td>
+          <td>Phonetic similarity (Soundex, Metaphone algorithms)</td>
+        </tr>
+        <tr>
+          <td>Named Entity Recognition</td>
+          <td>Phoneme patterns help identify proper nouns</td>
+        </tr>
+        <tr>
+          <td>Machine Translation</td>
+          <td>Loanword pronunciation; cross-lingual phoneme mapping</td>
+        </tr>
+        <tr>
+          <td>Dialogue Systems</td>
+          <td>Homophone disambiguation, prosody for intent detection</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card yellow">
+      <div class="card-title">G2P: Grapheme-to-Phoneme Conversion</div>
+      <p><span class="highlight-text">G2P</span> is the process of converting written text into phonetic notation. It's the first step in any TTS pipeline and uses phonological rules.</p>
+
+      <div class="flow-diagram">
+        <div class="flow-box"><div class="label">Input</div><div class="val" style="font-size:12px;">"through"</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box"><div class="label">G2P</div><div class="val">/θruː/</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box"><div class="label">Rules</div><div class="val" style="font-size:11px;">Stress, Reduction</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box"><div class="label">Speech</div><div class="val">🔊</div></div>
+      </div>
+
+      <p>English G2P is hard because spelling is not phonetically consistent! "though", "through", "rough", "cough" all spell "ough" differently.</p>
+
+      <div class="code-block">
+<span class="comment"># Using CMU Pronouncing Dictionary in NLTK</span>
+<span class="keyword">from</span> nltk.corpus <span class="keyword">import</span> cmudict
+
+d = cmudict.dict()
+print(d[<span class="string">'through'</span>])
+<span class="comment"># → [['TH', 'R', 'UW1']]</span>
+
+print(d[<span class="string">'butter'</span>])
+<span class="comment"># → [['B', 'AH1', 'T', 'ER0']]</span>
+<span class="comment"># Numbers indicate stress: 1=primary, 2=secondary, 0=unstressed</span>
+      </div>
+    </div>
+
+    <div class="card red">
+      <div class="card-title">Soundex — Phonetic Hashing for NLP</div>
+      <p><span class="highlight-text">Soundex</span> is a classic phonetic algorithm that maps names to codes based on sound, ignoring spelling. Used in spell checkers, fuzzy search, and duplicate detection.</p>
+
+      <div class="code-block">
+<span class="comment"># Soundex groups phonetically similar consonants</span>
+<span class="comment"># B,F,P,V → 1 | C,G,J,K,Q,S,X,Z → 2 | D,T → 3</span>
+<span class="comment"># L → 4 | M,N → 5 | R → 6</span>
+
+<span class="comment"># "Smith" and "Smythe" → same Soundex code S530</span>
+<span class="comment"># "Johnson" and "Jonson" → J525</span>
+
+<span class="keyword">import</span> jellyfish
+print(jellyfish.soundex(<span class="string">'Smith'</span>))   <span class="comment"># → S530</span>
+print(jellyfish.soundex(<span class="string">'Smythe'</span>))  <span class="comment"># → S530 ✓ Same!</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">MFCCs — Feeding Phonemes into ML Models</div>
+      <p><span class="highlight-text">Mel-Frequency Cepstral Coefficients (MFCCs)</span> are the most common audio features used in ASR and emotion detection — including your voice emotion project!</p>
+      <p>They approximate how humans perceive pitch and represent acoustic phoneme information as a vector fed into neural networks (ANN, CNN, LSTM).</p>
+
+      <div class="code-block">
+<span class="keyword">import</span> librosa
+import numpy as np
+
+audio, sr = librosa.load(<span class="string">'speech.wav'</span>, sr=<span class="string">16000</span>)
+mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=<span class="string">13</span>)
+
+<span class="comment"># shape: (13, time_frames)</span>
+<span class="comment"># Each column = one "snapshot" of phoneme-like features</span>
+<span class="comment"># Feed into LSTM for sequence modeling of speech</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 5: Quiz -->
+  <div class="section" id="s5">
+
+    <div class="card">
+      <div class="card-title">Test Your Knowledge</div>
+      <p>Answer all 6 questions. Results shown after each answer.</p>
+
+      <div class="quiz-progress" id="quiz-dots"></div>
+
+      <div id="quiz-container"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  // ====== NAV ======
+  function show(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ====== IPA DATA ======
+  const consonants = [
+    { sym: 'p', word: 'pin', desc: '/p/ — voiceless bilabial stop. "pin", "spin", "cap"' },
+    { sym: 'b', word: 'bat', desc: '/b/ — voiced bilabial stop. "bat", "cab", "above"' },
+    { sym: 't', word: 'top', desc: '/t/ — voiceless alveolar stop. "top", "stop", "sit"' },
+    { sym: 'd', word: 'dog', desc: '/d/ — voiced alveolar stop. "dog", "add", "end"' },
+    { sym: 'k', word: 'cat', desc: '/k/ — voiceless velar stop. "cat", "key", "back"' },
+    { sym: 'g', word: 'go', desc: '/g/ — voiced velar stop. "go", "bag", "get"' },
+    { sym: 'f', word: 'fan', desc: '/f/ — voiceless labiodental fricative. "fan", "leaf"' },
+    { sym: 'v', word: 'van', desc: '/v/ — voiced labiodental fricative. "van", "love", "of"' },
+    { sym: 'θ', word: 'think', desc: '/θ/ — voiceless dental fricative. "think", "both", "math"' },
+    { sym: 'ð', word: 'this', desc: '/ð/ — voiced dental fricative. "this", "the", "other"' },
+    { sym: 's', word: 'sun', desc: '/s/ — voiceless alveolar fricative. "sun", "miss", "cats"' },
+    { sym: 'z', word: 'zip', desc: '/z/ — voiced alveolar fricative. "zip", "jazz", "dogs"' },
+    { sym: 'ʃ', word: 'ship', desc: '/ʃ/ — voiceless palato-alveolar fricative. "ship", "fish"' },
+    { sym: 'ʒ', word: 'vision', desc: '/ʒ/ — voiced palato-alveolar fricative. "vision", "measure"' },
+    { sym: 'h', word: 'hat', desc: '/h/ — voiceless glottal fricative. "hat", "ahead"' },
+    { sym: 'tʃ', word: 'chip', desc: '/tʃ/ — voiceless affricate. "chip", "church", "match"' },
+    { sym: 'dʒ', word: 'jam', desc: '/dʒ/ — voiced affricate. "jam", "judge", "age"' },
+    { sym: 'm', word: 'man', desc: '/m/ — bilabial nasal. "man", "swim", "ham"' },
+    { sym: 'n', word: 'no', desc: '/n/ — alveolar nasal. "no", "sun", "and"' },
+    { sym: 'ŋ', word: 'sing', desc: '/ŋ/ — velar nasal. "sing", "ring", "bank"' },
+    { sym: 'l', word: 'lip', desc: '/l/ — lateral approximant. "lip", "fill", "well"' },
+    { sym: 'r', word: 'run', desc: '/r/ — approximant. "run", "very", "car"' },
+    { sym: 'j', word: 'yes', desc: '/j/ — palatal approximant. "yes", "you", "new"' },
+    { sym: 'w', word: 'wet', desc: '/w/ — labio-velar approximant. "wet", "away", "swim"' },
+  ];
+
+  const vowels = [
+    { sym: 'iː', word: 'see', desc: '/iː/ — long close front unrounded. "see", "beat", "key"' },
+    { sym: 'ɪ', word: 'sit', desc: '/ɪ/ — short near-close front. "sit", "this", "women"' },
+    { sym: 'e', word: 'bed', desc: '/e/ — close-mid front. "bed", "head", "said"' },
+    { sym: 'æ', word: 'cat', desc: '/æ/ — near-open front. "cat", "hand", "man"' },
+    { sym: 'ɑː', word: 'car', desc: '/ɑː/ — open back. "car", "father", "calm"' },
+    { sym: 'ɒ', word: 'hot', desc: '/ɒ/ — open back rounded (British). "hot", "top", "what"' },
+    { sym: 'ɔː', word: 'call', desc: '/ɔː/ — long open-mid back rounded. "call", "law", "thought"' },
+    { sym: 'ʊ', word: 'book', desc: '/ʊ/ — near-close near-back. "book", "put", "good"' },
+    { sym: 'uː', word: 'moon', desc: '/uː/ — long close back rounded. "moon", "food", "blue"' },
+    { sym: 'ʌ', word: 'cup', desc: '/ʌ/ — open-mid back. "cup", "love", "blood"' },
+    { sym: 'ɜː', word: 'bird', desc: '/ɜː/ — long open-mid central. "bird", "word", "nurse"' },
+    { sym: 'ə', word: 'about', desc: '/ə/ — SCHWA! Mid central. Unstressed syllables everywhere: "about", "banana", "teacher"' },
+  ];
+
+  function buildIPA() {
+    const cGrid = document.getElementById('consonant-grid');
+    const vGrid = document.getElementById('vowel-grid');
+
+    [...consonants].forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'phoneme-chip';
+      div.innerHTML = `<span class="ipa">${p.sym}</span><div class="word">${p.word}</div>`;
+      div.onclick = () => {
+        document.getElementById('ipa-info').textContent = p.desc;
+      };
+      cGrid.appendChild(div);
+    });
+
+    [...vowels].forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'phoneme-chip';
+      div.innerHTML = `<span class="ipa">${p.sym}</span><div class="word">${p.word}</div>`;
+      div.onclick = () => {
+        document.getElementById('ipa-info').textContent = p.desc;
+      };
+      vGrid.appendChild(div);
+    });
+  }
+
+  buildIPA();
+
+  // ====== QUIZ ======
+  const questions = [
+    {
+      q: "What is a phoneme?",
+      opts: ["A written letter", "The smallest sound unit that changes meaning", "A type of consonant", "An acoustic waveform"],
+      ans: 1,
+      exp: "✓ Correct! A phoneme is the smallest unit of sound that can distinguish meaning — e.g., /p/ vs /b/ in 'pat' vs 'bat'."
+    },
+    {
+      q: "What are allophones?",
+      opts: ["Different phonemes in two languages", "Phonemes with no meaning", "Contextual variants of the same phoneme", "Vowels in unstressed syllables"],
+      ans: 2,
+      exp: "✓ Correct! Allophones are different pronunciations of the same phoneme. They don't change meaning. E.g., aspirated [pʰ] and unaspirated [p] are both /p/ in English."
+    },
+    {
+      q: "Which phonological rule turns 'impossible' from 'in+possible'?",
+      opts: ["Deletion", "Assimilation", "Epenthesis", "Flapping"],
+      ans: 1,
+      exp: "✓ Correct! Assimilation — /n/ becomes /m/ because the following consonant /p/ is bilabial, and /m/ is also bilabial. The sounds 'assimilate' to each other."
+    },
+    {
+      q: "In 'butter', the middle /t/ is often pronounced as a flap [ɾ] in American English. What rule is this?",
+      opts: ["Vowel reduction", "Final devoicing", "Flapping", "Assimilation"],
+      ans: 2,
+      exp: "✓ Correct! Flapping: /t/ or /d/ becomes [ɾ] between a stressed and unstressed vowel. 'butter', 'water', 'ladder' all use this rule."
+    },
+    {
+      q: "What does the schwa /ə/ represent in phonetics?",
+      opts: ["A long stressed vowel", "Any consonant in final position", "The reduced unstressed vowel sound", "A nasal sound"],
+      ans: 2,
+      exp: "✓ Correct! The schwa /ə/ is the most common sound in English — an unstressed, reduced mid-central vowel. It appears in 'banana' → /bəˈnænə/, 'about' → /əˈbaʊt/."
+    },
+    {
+      q: "Which NLP library provides the CMU Pronouncing Dictionary for G2P tasks?",
+      opts: ["spaCy", "TensorFlow", "NLTK", "Hugging Face"],
+      ans: 2,
+      exp: "✓ Correct! NLTK's cmudict corpus provides pronunciation dictionaries used for G2P conversion in TTS and speech NLP pipelines."
+    }
+  ];
+
+  let currentQ = 0;
+  let answered = false;
+
+  function buildDots() {
+    const dots = document.getElementById('quiz-dots');
+    dots.innerHTML = '';
+    questions.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i < currentQ ? ' done' : i === currentQ ? ' current' : '');
+      dots.appendChild(d);
+    });
+  }
+
+  function renderQ() {
+    const q = questions[currentQ];
+    answered = false;
+    buildDots();
+
+    document.getElementById('quiz-container').innerHTML = `
+      <div class="quiz-q">${currentQ + 1} / ${questions.length} — ${q.q}</div>
+      <div class="quiz-options">
+        ${q.opts.map((o, i) => `<button class="opt-btn" onclick="answer(${i})">${o}</button>`).join('')}
+      </div>
+      <div id="quiz-feedback"></div>
+      <button class="next-btn" id="next-btn" onclick="nextQ()">${currentQ === questions.length - 1 ? 'See Results →' : 'Next Question →'}</button>
+    `;
+  }
+
+  function answer(i) {
+    if (answered) return;
+    answered = true;
+    const q = questions[currentQ];
+    const btns = document.querySelectorAll('.opt-btn');
+    const fb = document.getElementById('quiz-feedback');
+    const nb = document.getElementById('next-btn');
+
+    btns.forEach((b, idx) => {
+      if (idx === q.ans) b.classList.add('correct');
+      else if (idx === i) b.classList.add('wrong');
+      b.style.pointerEvents = 'none';
+    });
+
+    if (i === q.ans) {
+      fb.textContent = q.exp;
+      fb.className = 'correct show';
+    } else {
+      fb.textContent = '✗ Not quite. ' + q.exp;
+      fb.className = 'wrong show';
+    }
+
+    nb.classList.add('show');
+  }
+
+  function nextQ() {
+    currentQ++;
+    if (currentQ >= questions.length) {
+      document.getElementById('quiz-container').innerHTML = `
+        <div style="text-align:center; padding: 30px 0;">
+          <div style="font-family: Fraunces, serif; font-size: 3rem; color: var(--accent); font-weight: 900;">🎉</div>
+          <div style="font-family: Fraunces, serif; font-size: 1.5rem; color: var(--accent); margin: 10px 0;">Quiz Complete!</div>
+          <div style="color: var(--muted); font-size: 12px; margin-bottom: 20px;">You've covered: phonemes, allophones, phonological rules, and NLP applications.</div>
+          <button class="next-btn show" onclick="currentQ=0; renderQ()">Restart Quiz</button>
+        </div>
+      `;
+      buildDots();
+    } else {
+      renderQ();
+    }
+  }
+
+  renderQ();
+</script>
+</body>
+</html>
