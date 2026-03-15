@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Vision — Exam Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Literata:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent1: #7c6aff;
+    --accent2: #00d4aa;
+    --accent3: #ff6b6b;
+    --accent4: #ffa94d;
+    --text: #e8e8f0;
+    --muted: #888899;
+    --highlight: rgba(124,106,255,0.12);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Literata', Georgia, serif;
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    padding: 60px 40px 50px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .hero::before {
+    content:'';
+    position:absolute; inset:0;
+    background: radial-gradient(ellipse 70% 90% at 60% 0%, rgba(124,106,255,0.18) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 50% at 0% 100%, rgba(0,212,170,0.10) 0%, transparent 60%);
+    pointer-events:none;
+  }
+  .hero-label {
+    font-family:'DM Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    color: var(--accent2);
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .hero h1 {
+    font-family:'Syne',sans-serif;
+    font-size: clamp(28px,5vw,52px);
+    font-weight:800;
+    line-height:1.08;
+    letter-spacing:-0.02em;
+    background: linear-gradient(120deg, #fff 30%, var(--accent1) 80%);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    margin-bottom:12px;
+  }
+  .hero-sub {
+    color: var(--muted);
+    font-style:italic;
+    font-size:14px;
+  }
+  .module-pills {
+    display:flex; gap:10px; flex-wrap:wrap;
+    margin-top:24px;
+  }
+  .pill {
+    display:flex; align-items:center; gap:8px;
+    padding:8px 16px;
+    border-radius:100px;
+    font-family:'DM Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.05em;
+    border:1px solid var(--border);
+    cursor:pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+    color: var(--muted);
+  }
+  .pill:hover, .pill.active { border-color:var(--accent1); color:#fff; background:var(--highlight); }
+  .pill .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display:grid;
+    grid-template-columns: 240px 1fr;
+    min-height:calc(100vh - 200px);
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    border-right:1px solid var(--border);
+    padding:28px 20px;
+    position:sticky;
+    top:0; height:100vh;
+    overflow-y:auto;
+  }
+  .sidebar-title {
+    font-family:'DM Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.15em;
+    color: var(--muted);
+    text-transform:uppercase;
+    margin-bottom:16px;
+  }
+  .nav-module {
+    margin-bottom:20px;
+  }
+  .nav-module-title {
+    font-family:'Syne',sans-serif;
+    font-size:12px;
+    font-weight:700;
+    padding:6px 10px;
+    border-radius:6px;
+    cursor:pointer;
+    color: var(--muted);
+    transition:all 0.2s;
+    display:flex; align-items:center; gap:8px;
+  }
+  .nav-module-title:hover { color:#fff; background:var(--surface2); }
+  .nav-module-title.open { color:#fff; }
+  .nav-item {
+    font-size:11.5px;
+    padding:4px 10px 4px 28px;
+    border-radius:4px;
+    color: var(--muted);
+    cursor:pointer;
+    transition:all 0.15s;
+    font-family:'DM Mono',monospace;
+  }
+  .nav-item:hover { color:#fff; background:var(--surface2); }
+  .nav-item.active { color: var(--accent1); background:var(--highlight); }
+
+  /* ── CONTENT ── */
+  .content {
+    padding: 40px 50px;
+    max-width:900px;
+  }
+
+  /* ── MODULE HEADER ── */
+  .module-header {
+    display:flex; align-items:flex-start; gap:20px;
+    margin-bottom:40px;
+    padding-bottom:28px;
+    border-bottom:1px solid var(--border);
+  }
+  .module-num {
+    font-family:'Syne',sans-serif;
+    font-size:56px;
+    font-weight:800;
+    line-height:1;
+    opacity:0.12;
+    flex-shrink:0;
+  }
+  .module-meta h2 {
+    font-family:'Syne',sans-serif;
+    font-size:22px;
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  .module-hours {
+    font-family:'DM Mono',monospace;
+    font-size:11px;
+    color: var(--accent2);
+    letter-spacing:0.08em;
+  }
+
+  /* ── TOPIC CARDS ── */
+  .topic-section {
+    margin-bottom:44px;
+    display:none;
+  }
+  .topic-section.visible { display:block; animation: fadeUp 0.35s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+
+  .section-title {
+    font-family:'Syne',sans-serif;
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:0.01em;
+    margin-bottom:16px;
+    display:flex; align-items:center; gap:10px;
+    color:#fff;
+  }
+  .section-title::after {
+    content:'';
+    flex:1; height:1px;
+    background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
+  }
+
+  .card {
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:22px 24px;
+    margin-bottom:14px;
+    cursor:pointer;
+    transition: all 0.2s;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before {
+    content:'';
+    position:absolute; left:0; top:0; bottom:0; width:3px;
+    border-radius:3px 0 0 3px;
+  }
+  .card.m1::before { background: var(--accent1); }
+  .card.m2::before { background: var(--accent2); }
+  .card.m3::before { background: var(--accent3); }
+
+  .card:hover { border-color: var(--accent1); transform:translateY(-1px); background:var(--surface2); }
+  .card-head {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:0;
+  }
+  .card-title {
+    font-family:'Syne',sans-serif;
+    font-size:14px;
+    font-weight:700;
+    color:#fff;
+  }
+  .card-arrow {
+    font-size:16px; color:var(--muted);
+    transition:transform 0.2s;
+  }
+  .card.expanded .card-arrow { transform:rotate(90deg); color:var(--accent1); }
+  .card-body {
+    display:none;
+    margin-top:16px;
+    padding-top:16px;
+    border-top:1px solid var(--border);
+  }
+  .card.expanded .card-body { display:block; }
+
+  .card-body p { color:#c8c8da; margin-bottom:10px; font-size:13.5px; }
+  .card-body strong { color:#fff; font-weight:600; }
+
+  .formula {
+    background: var(--surface2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:12px 16px;
+    margin:12px 0;
+    font-family:'DM Mono',monospace;
+    font-size:12.5px;
+    color: var(--accent4);
+    overflow-x:auto;
+  }
+
+  .tag-list { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
+  .tag {
+    padding:3px 10px;
+    border-radius:100px;
+    font-family:'DM Mono',monospace;
+    font-size:10.5px;
+    background:var(--surface2);
+    border:1px solid var(--border);
+    color:var(--muted);
+  }
+
+  .exam-tip {
+    background: rgba(255,107,107,0.08);
+    border:1px solid rgba(255,107,107,0.25);
+    border-radius:8px;
+    padding:10px 14px;
+    margin-top:12px;
+    font-size:12.5px;
+    color:#ffb3b3;
+    display:flex; gap:8px;
+  }
+  .exam-tip .icon { flex-shrink:0; }
+
+  .steps {
+    counter-reset:step;
+    list-style:none;
+    margin:10px 0;
+  }
+  .steps li {
+    counter-increment:step;
+    padding:6px 0 6px 32px;
+    position:relative;
+    color:#c8c8da;
+    font-size:13px;
+    border-bottom:1px solid rgba(255,255,255,0.04);
+  }
+  .steps li::before {
+    content:counter(step);
+    position:absolute; left:0; top:6px;
+    width:20px; height:20px;
+    background:var(--accent1);
+    border-radius:50%;
+    font-family:'DM Mono',monospace;
+    font-size:10px;
+    color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    line-height:1;
+    text-align:center;
+    padding-top:1px;
+  }
+
+  .compare-table {
+    width:100%; border-collapse:collapse; margin:12px 0; font-size:12.5px;
+  }
+  .compare-table th {
+    background:var(--surface2);
+    padding:8px 12px;
+    text-align:left;
+    font-family:'DM Mono',monospace;
+    font-weight:500;
+    color: var(--accent2);
+    border-bottom:1px solid var(--border);
+    font-size:11px;
+    letter-spacing:0.05em;
+  }
+  .compare-table td {
+    padding:7px 12px;
+    border-bottom:1px solid rgba(255,255,255,0.04);
+    color:#c8c8da;
+  }
+  .compare-table tr:hover td { background:var(--surface2); }
+
+  /* ── MODULE PANEL ── */
+  .module-panel { display:none; }
+  .module-panel.active { display:block; }
+
+  /* ── QUICK REF ── */
+  .quick-ref {
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:20px 24px;
+    margin-bottom:30px;
+  }
+  .quick-ref-title {
+    font-family:'DM Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.15em;
+    color:var(--accent2);
+    text-transform:uppercase;
+    margin-bottom:12px;
+  }
+  .quick-ref ul {
+    list-style:none;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:6px;
+  }
+  .quick-ref li {
+    font-family:'DM Mono',monospace;
+    font-size:11.5px;
+    color:var(--muted);
+    padding:4px 0;
+    display:flex; gap:8px; align-items:baseline;
+  }
+  .quick-ref li span { color:#fff; }
+
+  @media(max-width:700px) {
+    .layout { grid-template-columns:1fr; }
+    .sidebar { display:none; }
+    .content { padding:24px 20px; }
+    .quick-ref ul { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">B.Tech CSE · AI & ML · VIT Bhopal</div>
+  <h1>Computer Vision<br>Exam Guide</h1>
+  <div class="hero-sub">3 Modules · 18 Hours · Click any card to expand</div>
+  <div class="module-pills">
+    <div class="pill active" onclick="showModule(1,this)">
+      <div class="dot" style="background:var(--accent1)"></div> M1 · Image Formation & Processing
+    </div>
+    <div class="pill" onclick="showModule(2,this)">
+      <div class="dot" style="background:var(--accent2)"></div> M2 · Depth & Multi-Camera
+    </div>
+    <div class="pill" onclick="showModule(3,this)">
+      <div class="dot" style="background:var(--accent3)"></div> M3 · Features & Segmentation
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-title">Topics</div>
+
+  <div class="nav-module" id="nav1">
+    <div class="nav-module-title open" onclick="showModule(1)">◈ Module 1</div>
+    <div class="nav-item active" onclick="revealTopic('t1_transforms')">Transformations</div>
+    <div class="nav-item" onclick="revealTopic('t1_fourier')">Fourier & Convolution</div>
+    <div class="nav-item" onclick="revealTopic('t1_enhance')">Enhancement & Restoration</div>
+    <div class="nav-item" onclick="revealTopic('t1_histogram')">Histogram Processing</div>
+  </div>
+
+  <div class="nav-module" id="nav2">
+    <div class="nav-module-title" onclick="showModule(2)">◈ Module 2</div>
+    <div class="nav-item" onclick="revealTopic('t2_stereo')">Binocular Stereopsis</div>
+    <div class="nav-item" onclick="revealTopic('t2_epipolar')">Epipolar Geometry</div>
+    <div class="nav-item" onclick="revealTopic('t2_homography')">Homography & DLT</div>
+    <div class="nav-item" onclick="revealTopic('t2_ransac')">RANSAC & 3D Recon</div>
+  </div>
+
+  <div class="nav-module" id="nav3">
+    <div class="nav-module-title" onclick="showModule(3)">◈ Module 3</div>
+    <div class="nav-item" onclick="revealTopic('t3_edges')">Edge Detectors</div>
+    <div class="nav-item" onclick="revealTopic('t3_descriptors')">SIFT / SURF / HOG</div>
+    <div class="nav-item" onclick="revealTopic('t3_scale')">Scale-Space & Gabor</div>
+    <div class="nav-item" onclick="revealTopic('t3_segmentation')">Segmentation</div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- ══ MODULE 1 ══ -->
+  <div class="module-panel active" id="module1">
+
+    <div class="module-header">
+      <div class="module-num" style="color:var(--accent1)">01</div>
+      <div class="module-meta">
+        <h2>Digital Image Formation & Low-Level Processing</h2>
+        <div class="module-hours">⏱ 5 Hours · SO: a, b, c</div>
+      </div>
+    </div>
+
+    <div class="quick-ref">
+      <div class="quick-ref-title">Quick Reference — Module 1</div>
+      <ul>
+        <li>→ <span>Image = f(x,y): intensity at pixel (x,y)</span></li>
+        <li>→ <span>Affine = linear + translation (6 DOF)</span></li>
+        <li>→ <span>Projective = most general (8 DOF)</span></li>
+        <li>→ <span>DFT: F(u,v) = Σ f(x,y)·e^(-j2π(ux+vy)/N)</span></li>
+        <li>→ <span>Convolution: (f*h)(x,y)</span></li>
+        <li>→ <span>Histogram equalization → uniform CDF</span></li>
+      </ul>
+    </div>
+
+    <!-- Transformations -->
+    <div class="topic-section visible" id="t1_transforms">
+      <div class="section-title">Geometric Transformations</div>
+
+      <div class="card m1" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Transformation Hierarchy</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <table class="compare-table">
+            <tr><th>Type</th><th>DOF</th><th>Preserves</th><th>Matrix Size</th></tr>
+            <tr><td>Euclidean (Rigid)</td><td>3</td><td>Distances, angles</td><td>2×3</td></tr>
+            <tr><td>Orthogonal</td><td>1</td><td>Shape, area (rotation only)</td><td>2×2</td></tr>
+            <tr><td>Affine</td><td>6</td><td>Parallelism, ratios</td><td>2×3</td></tr>
+            <tr><td>Projective</td><td>8</td><td>Straight lines only</td><td>3×3</td></tr>
+          </table>
+          <div class="formula">Affine: [x' y' 1]ᵀ = [a b tx; c d ty; 0 0 1] [x y 1]ᵀ
+Projective (homogeneous): x' = Hx where H is 3×3, 8 DOF (det≠0)</div>
+          <div class="exam-tip"><span class="icon">🎯</span> Each transformation is a SUBSET of the next. Euclidean ⊂ Affine ⊂ Projective. Know which properties are lost at each level.</div>
+        </div>
+      </div>
+
+      <div class="card m1" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Rotation, Scale & Shear Matrices</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <div class="formula">Rotation (θ):     [cos θ  -sin θ]
+                   [sin θ   cos θ]
+
+Scale (sx, sy):   [sx  0 ]
+                   [0   sy]
+
+Shear (hx, hy):   [1   hx]
+                   [hy   1]</div>
+          <p>These are all components of affine transformations. Compose them via matrix multiplication.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fourier -->
+    <div class="topic-section" id="t1_fourier">
+      <div class="section-title">Fourier Transform & Convolution</div>
+
+      <div class="card m1" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">2D Discrete Fourier Transform (DFT)</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <div class="formula">F(u,v) = Σₓ Σᵧ f(x,y) · e^(-j2π(ux/M + vy/N))
+
+Inverse: f(x,y) = (1/MN) Σᵤ Σᵥ F(u,v) · e^(j2π(ux/M + vy/N))</div>
+          <p><strong>Key Properties:</strong></p>
+          <div class="tag-list">
+            <span class="tag">Linearity</span>
+            <span class="tag">Shift: f(x-x₀) ↔ e^(-j2πux₀/M)·F(u)</span>
+            <span class="tag">Convolution Theorem</span>
+            <span class="tag">Periodicity</span>
+          </div>
+          <p><strong>Convolution Theorem:</strong> f*g in spatial domain = F·G in frequency domain (multiplication). This is why we do filtering in frequency domain — it's faster with FFT.</p>
+          <div class="exam-tip"><span class="icon">🎯</span> Low frequencies = smooth/DC component (center after shift). High frequencies = edges/details (periphery). Low-pass filter → blur. High-pass → sharpen/edge detect.</div>
+        </div>
+      </div>
+
+      <div class="card m1" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Convolution & Filtering</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <div class="formula">(f * h)(x,y) = Σₛ Σₜ f(s,t) · h(x-s, y-t)</div>
+          <p><strong>Common Filter Kernels:</strong></p>
+          <table class="compare-table">
+            <tr><th>Filter</th><th>Effect</th><th>Kernel Example</th></tr>
+            <tr><td>Box/Average</td><td>Blur (low-pass)</td><td>[1/9 ... 1/9] (3×3)</td></tr>
+            <tr><td>Gaussian</td><td>Smooth blur</td><td>Gaussian weights, σ controls spread</td></tr>
+            <tr><td>Laplacian</td><td>Edge detect (2nd deriv)</td><td>[0 1 0; 1 -4 1; 0 1 0]</td></tr>
+            <tr><td>Sobel</td><td>Gradient / edges</td><td>Gₓ=[−1 0 1;−2 0 2;−1 0 1]</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enhancement -->
+    <div class="topic-section" id="t1_enhance">
+      <div class="section-title">Image Enhancement & Restoration</div>
+
+      <div class="card m1" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Spatial Domain Enhancement</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p>Enhancement is <strong>subjective</strong> (looks better to humans); Restoration is <strong>objective</strong> (reverse a known degradation).</p>
+          <table class="compare-table">
+            <tr><th>Technique</th><th>Use Case</th></tr>
+            <tr><td>Negative Transform: s = L-1-r</td><td>Enhance white detail on dark images</td></tr>
+            <tr><td>Log Transform: s = c·log(1+r)</td><td>Expand dark, compress bright (Fourier magnitude)</td></tr>
+            <tr><td>Power-Law (Gamma): s = c·rᵞ</td><td>Monitor gamma correction, general contrast</td></tr>
+            <tr><td>Median Filter</td><td>Remove salt-and-pepper noise (non-linear)</td></tr>
+            <tr><td>Sharpening (Unsharp Mask)</td><td>f + k·(f − blurred_f)</td></tr>
+          </table>
+          <div class="exam-tip"><span class="icon">🎯</span> γ&lt;1 → brightens. γ&gt;1 → darkens. γ=1 → identity (linear). Median filter is best for impulse/salt-pepper noise; preserves edges better than mean.</div>
+        </div>
+      </div>
+
+      <div class="card m1" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Image Restoration — Wiener Filter</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p>Degradation model: <strong>g = h * f + η</strong> (observed = blur * original + noise)</p>
+          <div class="formula">Wiener Filter (frequency domain):
+F̂(u,v) = [H*(u,v) / (|H(u,v)|² + Sη/Sf)] · G(u,v)
+
+Where: H = degradation function, Sη = noise PSD, Sf = signal PSD</div>
+          <p>When noise is zero → reduces to <strong>Inverse Filter</strong>. Wiener is optimal in MSE sense.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Histogram -->
+    <div class="topic-section" id="t1_histogram">
+      <div class="section-title">Histogram Processing</div>
+
+      <div class="card m1" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Histogram Equalization</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p>Goal: make histogram <strong>uniform</strong> → maximize contrast.</p>
+          <div class="formula">sk = T(rk) = (L-1) · Σⱼ₌₀ᵏ p(rⱼ)
+
+Where: p(rⱼ) = nⱼ/n (probability of intensity rⱼ)
+       L = number of gray levels (256)
+       sk = output intensity</div>
+          <ol class="steps">
+            <li>Compute histogram: count pixels at each intensity</li>
+            <li>Compute normalized histogram (probability)</li>
+            <li>Compute cumulative distribution function (CDF)</li>
+            <li>Map: new_intensity = round(CDF(k) × (L-1))</li>
+          </ol>
+          <div class="exam-tip"><span class="icon">🎯</span> Histogram equalization is global. For local: apply equalization to sub-windows (CLAHE = Contrast Limited Adaptive HE). Expect a numerical problem in exam!</div>
+        </div>
+      </div>
+
+      <div class="card m1" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Histogram Specification (Matching)</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p>Unlike equalization (uniform target), matching makes histogram look like a <strong>target histogram</strong>.</p>
+          <ol class="steps">
+            <li>Equalize input image → sk</li>
+            <li>Equalize target/specified histogram → vk</li>
+            <li>For each sk, find vk closest → create mapping</li>
+            <li>Apply inverse of target's equalization transform</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- END MODULE 1 -->
+
+  <!-- ══ MODULE 2 ══ -->
+  <div class="module-panel" id="module2">
+
+    <div class="module-header">
+      <div class="module-num" style="color:var(--accent2)">02</div>
+      <div class="module-meta">
+        <h2>Depth Estimation & Multi-Camera Views</h2>
+        <div class="module-hours">⏱ 6 Hours · SO: a, b, c</div>
+      </div>
+    </div>
+
+    <div class="quick-ref">
+      <div class="quick-ref-title">Quick Reference — Module 2</div>
+      <ul>
+        <li>→ <span>Disparity d = xL - xR</span></li>
+        <li>→ <span>Depth Z = f·B / d</span></li>
+        <li>→ <span>Epipolar line: l' = Fx</span></li>
+        <li>→ <span>Essential Matrix E = t× R</span></li>
+        <li>→ <span>Fundamental Matrix F = K⁻ᵀEK⁻¹</span></li>
+        <li>→ <span>Homography H: maps plane to plane (3×3)</span></li>
+        <li>→ <span>DLT: solve Ah=0 via SVD</span></li>
+        <li>→ <span>RANSAC: Random Sample Consensus</span></li>
+      </ul>
+    </div>
+
+    <div class="topic-section visible" id="t2_stereo">
+      <div class="section-title">Binocular Stereopsis & Depth</div>
+
+      <div class="card m2" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Perspective Projection & Depth</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <div class="formula">Perspective Projection:
+x = f·X/Z,  y = f·Y/Z   (pinhole camera model)
+
+In homogeneous: [u v w]ᵀ = K · [R | t] · [X Y Z 1]ᵀ
+
+K = [f  0  cx]    (intrinsic matrix)
+    [0  f  cy]
+    [0  0   1]</div>
+          <p><strong>Depth from Stereo:</strong></p>
+          <div class="formula">Disparity: d = xL - xR  (difference in x-coordinate between cameras)
+Depth:     Z = f · B / d
+           where B = baseline (distance between cameras), f = focal length</div>
+          <div class="exam-tip"><span class="icon">🎯</span> Larger disparity = closer object. If d=0, point is at infinity. Know the inverse relationship: Z ∝ 1/d.</div>
+        </div>
+      </div>
+
+      <div class="card m2" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Camera Calibration</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p><strong>Intrinsic Parameters (K):</strong> focal length (fx, fy), principal point (cx, cy), skew</p>
+          <p><strong>Extrinsic Parameters [R|t]:</strong> rotation and translation — camera pose in world</p>
+          <p>Full projection matrix: <strong>P = K[R|t]</strong> (3×4 matrix)</p>
+          <div class="exam-tip"><span class="icon">🎯</span> Auto-calibration: find K from multiple images WITHOUT known calibration object (using epipolar constraints). Zhang's method uses planar checkerboard.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-section" id="t2_epipolar">
+      <div class="section-title">Epipolar Geometry</div>
+
+      <div class="card m2" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Epipolar Constraint & Fundamental Matrix</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p><strong>Key terms:</strong></p>
+          <div class="tag-list">
+            <span class="tag">Epipole: projection of one camera center in the other image</span>
+            <span class="tag">Epipolar plane: plane through X, C1, C2</span>
+            <span class="tag">Epipolar line: intersection of epipolar plane with image plane</span>
+          </div>
+          <div class="formula">Epipolar constraint:  x'ᵀ F x = 0
+
+Essential Matrix:  E = [t]ₓ R    (for calibrated cameras)
+Fundamental Matrix: F = K'⁻ᵀ E K⁻¹  (for uncalibrated, pixel coords)
+
+F is 3×3, rank 2, 7 DOF (scale invariant, det=0 constraint)</div>
+          <p><strong>Why useful?</strong> Given point x in image 1, its correspondence in image 2 lies on the epipolar line <strong>l' = Fx</strong> — reduces 2D search to 1D.</p>
+          <div class="exam-tip"><span class="icon">🎯</span> E has 5 DOF (calibrated). F has 7 DOF (uncalibrated). To compute F: need ≥8 point correspondences (8-point algorithm).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-section" id="t2_homography">
+      <div class="section-title">Homography & Rectification</div>
+
+      <div class="card m2" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Homography</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p>A <strong>Homography H</strong> is a 3×3 projective transformation mapping one image plane to another (8 DOF, scale invariant).</p>
+          <div class="formula">x' = H x  (in homogeneous coordinates)
+
+Valid when: both cameras observe the same PLANE, OR cameras undergo pure rotation</div>
+          <p><strong>Applications:</strong> panoramic stitching, rectification, planar AR, mosaicking.</p>
+          <div class="exam-tip"><span class="icon">🎯</span> Need minimum 4 point correspondences to compute H (each gives 2 equations, H has 8 unknowns). More points → use DLT with SVD.</div>
+        </div>
+      </div>
+
+      <div class="card m2" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">DLT Algorithm (Direct Linear Transform)</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <ol class="steps">
+            <li>Normalize points (zero mean, unit scale) for numerical stability</li>
+            <li>For each correspondence (xᵢ, x'ᵢ): form equations → build matrix A (2n × 9)</li>
+            <li>Solve Ah = 0 using SVD: h = last column of V (singular vector for smallest σ)</li>
+            <li>Reshape h (9×1) → H (3×3)</li>
+            <li>Denormalize: H = T'⁻¹ · Ĥ · T</li>
+          </ol>
+          <div class="formula">For each point: [x'ᵢ × H·xᵢ = 0]
+→ 2 equations per point, 9 unknowns (entries of H)
+→ Stacked into Ah=0 → SVD → h = null space of A</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-section" id="t2_ransac">
+      <div class="section-title">RANSAC & 3D Reconstruction</div>
+
+      <div class="card m2" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">RANSAC Algorithm</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p><strong>Random Sample Consensus</strong> — robust estimation in presence of <strong>outliers</strong>.</p>
+          <ol class="steps">
+            <li>Randomly sample minimum number of points (e.g. 4 for H, 8 for F)</li>
+            <li>Fit model (estimate H or F) from sample</li>
+            <li>Count inliers: all points where |error| &lt; threshold ε</li>
+            <li>Repeat N iterations; keep model with most inliers</li>
+            <li>Refit using all inliers of best model</li>
+          </ol>
+          <div class="formula">Number of iterations: N = log(1-p) / log(1-(1-e)^s)
+p = desired probability (e.g. 0.99)
+e = outlier fraction
+s = sample size (min points to fit model)</div>
+          <div class="exam-tip"><span class="icon">🎯</span> RANSAC is robust to outliers (50%+ possible). More outliers → more iterations needed. Always paired with DLT or 8-point algorithm in exam questions.</div>
+        </div>
+      </div>
+
+      <div class="card m2" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">3D Reconstruction Framework</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <ol class="steps">
+            <li>Detect & match features between images</li>
+            <li>Estimate F (fundamental matrix) using RANSAC + 8-point</li>
+            <li>Compute essential matrix E = Kᵀ F K</li>
+            <li>Decompose E → [R|t] (4 solutions, pick correct by positive depth check)</li>
+            <li>Triangulate 3D points using correspondences</li>
+            <li>Bundle adjustment (non-linear refinement)</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- END MODULE 2 -->
+
+  <!-- ══ MODULE 3 ══ -->
+  <div class="module-panel" id="module3">
+
+    <div class="module-header">
+      <div class="module-num" style="color:var(--accent3)">03</div>
+      <div class="module-meta">
+        <h2>Feature Extraction & Image Segmentation</h2>
+        <div class="module-hours">⏱ 7 Hours · SO: a, b, c</div>
+      </div>
+    </div>
+
+    <div class="quick-ref">
+      <div class="quick-ref-title">Quick Reference — Module 3</div>
+      <ul>
+        <li>→ <span>Canny: Gaussian → Sobel → NMS → Hysteresis</span></li>
+        <li>→ <span>Hough: (x-a)²+(y-b)²=r² → voting</span></li>
+        <li>→ <span>Harris R = det(M) - k·trace(M)²</span></li>
+        <li>→ <span>SIFT: 128-dim, scale+rotation invariant</span></li>
+        <li>→ <span>HOG: gradient orientation histograms</span></li>
+        <li>→ <span>Mean-Shift: find density modes</span></li>
+        <li>→ <span>Graph-Cut: min-cut / max-flow</span></li>
+      </ul>
+    </div>
+
+    <div class="topic-section visible" id="t3_edges">
+      <div class="section-title">Edge Detection & Line/Corner Detectors</div>
+
+      <div class="card m3" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Canny Edge Detector</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p>Optimal edge detector: <strong>good detection, good localization, single response</strong>.</p>
+          <ol class="steps">
+            <li>Smooth with Gaussian filter (remove noise)</li>
+            <li>Compute gradient magnitude & direction (Sobel: Gx, Gy → |G|, θ)</li>
+            <li>Non-Maximum Suppression (NMS): thin edges to 1-pixel width</li>
+            <li>Double Thresholding: high threshold → strong edges; low → weak</li>
+            <li>Hysteresis: weak edge kept only if connected to strong edge</li>
+          </ol>
+          <div class="exam-tip"><span class="icon">🎯</span> NMS: at each pixel, compare gradient magnitude with neighbors in gradient direction. Keep only local maxima. This is what makes Canny edges thin and precise.</div>
+        </div>
+      </div>
+
+      <div class="card m3" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">LoG & DoG (Laplacian / Difference of Gaussians)</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <div class="formula">LoG: ∇²G(x,y) = (x²+y²-2σ²)/σ⁴ · e^(-(x²+y²)/2σ²)
+
+DoG ≈ LoG:  DoG = G(x,y,kσ) - G(x,y,σ)   (used in SIFT!)</div>
+          <p>LoG finds edges as <strong>zero-crossings</strong> of second derivative. DoG is computationally cheaper approximation used extensively in SIFT for blob detection across scales.</p>
+        </div>
+      </div>
+
+      <div class="card m3" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Hough Transform (Lines & Circles)</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p><strong>Idea:</strong> Vote in parameter space. Each edge point votes for all lines/circles it could belong to.</p>
+          <div class="formula">Line (Normal form):  ρ = x·cos θ + y·sin θ
+→ Accumulator: A[ρ, θ] += 1 for each edge point
+→ Peaks in A → detected lines
+
+Circle: (x-a)²+(y-b)² = r²
+→ 3D accumulator space (a, b, r)
+→ If r is known → 2D accumulator</div>
+          <ol class="steps">
+            <li>Detect edge points</li>
+            <li>For each edge point, vote across all (ρ,θ) / (a,b,r)</li>
+            <li>Find peaks in accumulator → detected shapes</li>
+          </ol>
+          <div class="exam-tip"><span class="icon">🎯</span> Use normal (ρ,θ) form instead of (m,b) because m is unbounded for vertical lines. ρ ∈ [-diagonal, +diagonal], θ ∈ [0°, 180°].</div>
+        </div>
+      </div>
+
+      <div class="card m3" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Harris Corner Detector</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <div class="formula">Structure tensor M = Σ w(x,y) [Ix²   IxIy]
+                                  [IxIy  Iy² ]
+
+Corner response: R = det(M) - k·trace(M)²
+               = λ₁λ₂ - k(λ₁+λ₂)²
+
+k ≈ 0.04–0.06 (empirical constant)</div>
+          <table class="compare-table">
+            <tr><th>λ₁, λ₂ values</th><th>Region type</th></tr>
+            <tr><td>Both small</td><td>Flat region (R ≈ 0)</td></tr>
+            <tr><td>One large, one small</td><td>Edge (R &lt; 0)</td></tr>
+            <tr><td>Both large</td><td>Corner (R &gt;&gt; 0) ✓</td></tr>
+          </table>
+          <div class="exam-tip"><span class="icon">🎯</span> Harris is rotation invariant (uses eigenvalues) but NOT scale invariant. For scale invariance → use Hessian-Affine or SIFT.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-section" id="t3_descriptors">
+      <div class="section-title">Feature Descriptors: SIFT, SURF, HOG, GLOH</div>
+
+      <div class="card m3" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">SIFT — Scale Invariant Feature Transform</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p>Invariant to: <strong>scale, rotation, illumination, viewpoint</strong> (partially).</p>
+          <ol class="steps">
+            <li><strong>Scale-space extrema:</strong> Build DoG pyramid, find local max/min across scale and space</li>
+            <li><strong>Keypoint localization:</strong> Fit quadratic to refine position, remove low contrast/edge points</li>
+            <li><strong>Orientation assignment:</strong> Histogram of gradients in neighborhood → dominant orientation (makes rotation invariant)</li>
+            <li><strong>Descriptor:</strong> 4×4 spatial cells × 8 orientation bins = <strong>128-dim vector</strong></li>
+          </ol>
+          <div class="formula">Descriptor: 128-dimensional, L2-normalized
+Matching: Lowe's ratio test: d1/d2 &lt; 0.8 → good match</div>
+          <div class="exam-tip"><span class="icon">🎯</span> SIFT is patented (historically). OpenSURF/ORB are free alternatives. In exam: remember 128 dimensions, DoG for detection, gradient histogram for descriptor.</div>
+        </div>
+      </div>
+
+      <div class="card m3" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">SURF, HOG, and GLOH</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <table class="compare-table">
+            <tr><th>Descriptor</th><th>Key Idea</th><th>Dims</th><th>Speed</th></tr>
+            <tr><td>SIFT</td><td>DoG + gradient histogram</td><td>128</td><td>Slow</td></tr>
+            <tr><td>SURF</td><td>Haar wavelets + integral images</td><td>64</td><td>Faster (~3×)</td></tr>
+            <tr><td>HOG</td><td>Gradient orientation histograms (dense, not keypoint)</td><td>Varies</td><td>Fast</td></tr>
+            <tr><td>GLOH</td><td>SIFT with log-polar grid, PCA-reduced</td><td>128</td><td>Slow</td></tr>
+          </table>
+          <p><strong>HOG (Histogram of Oriented Gradients)</strong> is used primarily for <strong>object detection</strong> (pedestrian detection with SVM). Works on dense grids, not keypoints.</p>
+          <div class="formula">HOG pipeline: normalize image → compute gradients → 
+cell histograms (8 bins) → block normalization → 
+concatenate → feature vector</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-section" id="t3_scale">
+      <div class="section-title">Scale-Space, Image Pyramids & Gabor Filters</div>
+
+      <div class="card m3" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Scale-Space & Image Pyramids</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <div class="formula">Scale-space: L(x,y,σ) = G(x,y,σ) * I(x,y)
+where G is Gaussian with std σ
+
+Gaussian Pyramid: repeatedly Gaussian blur + downsample (by 2)
+Laplacian Pyramid: difference between adjacent Gaussian levels
+                   Lᵢ = Gᵢ - upsample(Gᵢ₊₁)</div>
+          <p><strong>Laplacian pyramid</strong> captures band-pass details at each scale. Used for image compression, blending, and feature detection across scales.</p>
+          <div class="exam-tip"><span class="icon">🎯</span> SIFT uses DoG pyramid (approximation of LoG pyramid). Gaussian pyramid discards information; Laplacian pyramid is lossless (you can reconstruct original).</div>
+        </div>
+      </div>
+
+      <div class="card m3" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Gabor Filters & DWT</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <div class="formula">Gabor Filter: g(x,y,λ,θ,σ) = Gaussian × sinusoidal grating
+= exp(-(x'²+γ²y'²)/2σ²) · cos(2πx'/λ + ψ)
+
+Parameters: λ=wavelength, θ=orientation, σ=scale, γ=aspect ratio</div>
+          <p>Gabor filters are <strong>optimal</strong> in joint spatial-frequency localization (like human visual cortex V1 cells). Used for <strong>texture analysis</strong>.</p>
+          <p><strong>DWT (Discrete Wavelet Transform):</strong> Decomposes image into approximation (LL) + detail (LH, HL, HH) subbands at multiple scales. Better than Fourier for non-stationary signals.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-section" id="t3_segmentation">
+      <div class="section-title">Image Segmentation Methods</div>
+
+      <div class="card m3" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Region Growing & Edge-Based Segmentation</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p><strong>Region Growing:</strong> Start from seed pixel, add neighbors that satisfy similarity criterion (intensity, color, texture). Stop when no more pixels qualify.</p>
+          <p><strong>Edge-Based:</strong> Detect edges (Canny etc.) → try to form closed contours → fill contours as regions. Problem: edges are rarely perfectly closed.</p>
+          <div class="exam-tip"><span class="icon">🎯</span> Region growing is sensitive to seed selection. Edge-based fails with broken edges. Both are classic methods, often combined with modern approaches.</div>
+        </div>
+      </div>
+
+      <div class="card m3" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Graph-Cut Segmentation</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p>Model image as a graph: pixels=nodes, edges=similarity weights. Segmentation = finding <strong>minimum cut</strong> separating foreground (source S) from background (sink T).</p>
+          <div class="formula">Energy = Σ Data_term(pixel assignment) + λ·Σ Smoothness_term(neighbors)
+Minimized via max-flow / min-cut (equivalent by max-flow min-cut theorem)</div>
+          <p><strong>GrabCut</strong> = iterative graph cut with GMM color models. Used in Adobe Photoshop.</p>
+          <div class="exam-tip"><span class="icon">🎯</span> Graph-Cut is a global optimization method. Unlike region growing (greedy), it finds the globally optimal binary labeling given the energy function.</div>
+        </div>
+      </div>
+
+      <div class="card m3" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">Mean-Shift Segmentation</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p>Non-parametric: finds <strong>modes (peaks)</strong> of the density function in feature space (color + spatial).</p>
+          <ol class="steps">
+            <li>Represent each pixel as point in feature space (e.g., [R,G,B,x,y])</li>
+            <li>For each point: compute mean of points within bandwidth h</li>
+            <li>Shift point to that mean; repeat until convergence</li>
+            <li>Points converging to same mode → same segment</li>
+          </ol>
+          <p><strong>No need to specify number of clusters</strong> (unlike k-means). Bandwidth h controls granularity.</p>
+        </div>
+      </div>
+
+      <div class="card m3" onclick="toggleCard(this)">
+        <div class="card-head">
+          <div class="card-title">MRF & Texture Segmentation</div>
+          <div class="card-arrow">›</div>
+        </div>
+        <div class="card-body">
+          <p><strong>Markov Random Field (MRF):</strong> Statistical model where each pixel's label depends only on its neighbors (Markov property). Energy minimization via belief propagation or graph cut.</p>
+          <div class="formula">P(label | image) ∝ exp(-E(label, image))
+E = Σ_i Ei(li) + Σ_{i,j∈N} Eij(li, lj)
+    (unary: data fit) + (pairwise: smoothness)</div>
+          <p><strong>Texture Segmentation:</strong> Compute texture features (Gabor filters, LBP, GLCM) per region, then cluster/classify. Key idea: similar texture → same segment.</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+  <!-- END MODULE 3 -->
+
+</div>
+</div>
+
+<script>
+  function showModule(n, pillEl) {
+    // hide all panels
+    document.querySelectorAll('.module-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('module'+n).classList.add('active');
+
+    // update pills
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    if (pillEl) pillEl.classList.add('active');
+    else {
+      document.querySelectorAll('.pill')[n-1].classList.add('active');
+    }
+
+    // show first topic of that module
+    const moduleSections = document.getElementById('module'+n).querySelectorAll('.topic-section');
+    moduleSections.forEach((s,i) => {
+      s.classList.toggle('visible', i===0);
+    });
+
+    // update nav active state
+    const navTitles = document.querySelectorAll('.nav-module-title');
+    navTitles.forEach((t,i) => t.classList.toggle('open', i===n-1));
+  }
+
+  function revealTopic(id) {
+    // figure out which module
+    const el = document.getElementById(id);
+    if (!el) return;
+    const panel = el.closest('.module-panel');
+    const moduleNum = parseInt(panel.id.replace('module',''));
+    showModule(moduleNum);
+
+    // hide all, show target
+    panel.querySelectorAll('.topic-section').forEach(s => s.classList.remove('visible'));
+    el.classList.add('visible');
+
+    // update nav items
+    document.querySelectorAll('.nav-item').forEach(ni => {
+      ni.classList.toggle('active', ni.getAttribute('onclick').includes(id));
+    });
+
+    el.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function toggleCard(card) {
+    card.classList.toggle('expanded');
+  }
+</script>
+</body>
+</html>
